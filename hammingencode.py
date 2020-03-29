@@ -31,14 +31,20 @@ if bitCheck(dataBits):
     c = 0  # resetting counter
     l = len(hammingCode)
 
-    for bit in range(l):
-         # Taking each parity bit and gathering the data bits covered by the it
+    # Taking each parity bit and gathering the data bits covered by the it
+    for bitIndex in range(l):
          p = 2 ** c
-         if p == bit + 1:
+
+         # Each data bit is included in a unique set of 2 or more parity bits, as determined by the binary form of its bit position
+         # In general each parity bit covers all bits where the bitwise AND of the parity position and the bit position is non-zero
+         #  if you have m parity bits, it can cover bits from 1 up to 2**m − 1
+         #  If we subtract out the parity bits, we are left with 2**m − m − 1 bits we can use for the data
+         if p == bitIndex + 1:
             start = p - 1
             i = start
             bitCoverage = []
 
+            # Adding the data bits covered by bitIndex parity bit
             while i < l:
                 bitBlock = hammingCode[i:i+p]
                 bitCoverage.extend(bitBlock)
