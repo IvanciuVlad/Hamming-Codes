@@ -53,7 +53,8 @@ if bitCheck(hammingCode):
         print("Bit ", error, " is flipped")
         hammingCode_copy[error - 1] ^= 1
         hammingCode_copy.reverse()
-        print("The correct code is ", hammingCode_copy)
+        print("The correct code is ", end='')
+        print(''.join(map(str, hammingCode_copy)))
     
 else:
     print("Insert a valid string")
