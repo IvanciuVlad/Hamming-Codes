@@ -4,6 +4,7 @@ import tkinter
 HEIGHT = 600
 WIDTH = 700
 
+
 def bitCheck(bits):
     valid = ['1', '0']
     for item in bits:
@@ -11,13 +12,13 @@ def bitCheck(bits):
             return 0
     return 1
 
+
 def encode(data):
     labelString = ''
     dataBits = list(data)
     dataBits.reverse()
     if bitCheck(dataBits):
-        print("It's valid")
-        labelString = labelString + "It's valid \n"
+        labelString = labelString + "It's syntactically correct \n"
         l = len(dataBits)
         hammingCode = []
         r, j, c = 0, 0, 0
@@ -69,15 +70,15 @@ def encode(data):
         labelString = "Insert a valid string"
     label['text'] = labelString
 
+
 def decode(data):
     labelString = ''
     hammingCode = list(data)
     hammingCode.reverse()
     if bitCheck(hammingCode):
-        print("It's valid")
-        labelString = labelString + "It's a valid code\n"
+        labelString = labelString + "It's syntactically correct\n"
         r, c, j, error = 0, 0, 0, 0
-        controlBits, hammingCode_copy = [], []
+        syndromes, hammingCode_copy, dataBits = [], [], []
         l = len(hammingCode)
 
         # Creating a copy and changing the data type to integer
@@ -94,7 +95,6 @@ def decode(data):
                 bitCoverage = []
 
                 # For each control bit, we recalculate the parity, same as for encoding
-                # We save the control bits in controlBits
                 while i < l:
                     bitBlock = hammingCode[i:i + p]
                     bitCoverage.extend(bitBlock)
@@ -102,12 +102,12 @@ def decode(data):
 
                 for j in range(1, len(bitCoverage)):
                     hammingCode[start] = hammingCode[start] ^ bitCoverage[j]
-                controlBits.append(hammingCode[bitIndex])
+                syndromes.append(hammingCode[bitIndex])
                 c += 1
 
         # Error detection and correction
-        for i, controlBit in enumerate(controlBits[::1]):
-            error += (controlBit * (2 ** i))
+        for i, syndrome in enumerate(syndromes[::1]):
+            error += (syndrome * (2 ** i))
 
         if error == 0:
             labelString = labelString + "There is no error in code." + '\n'
@@ -119,6 +119,19 @@ def decode(data):
             hammingCode_copy.reverse()
             labelString = labelString + 'The correct code is '
             labelString = labelString + ''.join(map(str, hammingCode_copy)) + '\n'
+            hammingCode_copy.reverse()
+
+        # To find the original data bits we use the corrected hamming code (if there was an error)
+        # Then we use the same process as for finding the control bits but this time we save the data bits into a separate vector
+        labelString = labelString + 'The original data bits are '
+        c = 0
+        for bitIndex in range(l):
+            p = 2 ** c
+            if p == bitIndex + 1:
+                c += 1
+            else:
+                dataBits.append(hammingCode_copy[bitIndex])
+        labelString = labelString + ''.join(map(str, dataBits))
 
     else:
         labelString = 'Insert a valid string'
@@ -134,17 +147,16 @@ canvas.pack()
 frame = tkinter.Frame(root, bg='#b3b3ff', bd=5)
 frame.place(relx=0.05, rely=0.05, relwidth=0.9, relheight=0.9)
 
-entry = tkinter.Entry(frame, font=40)
+entry = tkinter.Entry(frame, font=64)
 entry.place(relx=0.0, rely=0.0, relwidth=1.0, relheight=0.4)
 
-label = tkinter.Label(frame, text='Please insert your code', font=40)
+label = tkinter.Label(frame, text='Please insert your code', font=64)
 label.place(relx=0.0, rely=0.6, relwidth=1.0, relheight=0.4)
 
-encodeButton = tkinter.Button(frame, text='Encode', bg='cyan', fg='red', font=40, command=lambda: encode(entry.get()))
+encodeButton = tkinter.Button(frame, text='Encode', bg='cyan', fg='red', font=64, command=lambda: encode(entry.get()))
 encodeButton.place(relx=0.0, rely=0.4, relwidth=0.5, relheight=0.2)
 
-decodeButton = tkinter.Button(frame, text='Decode', bg='cyan', fg='red', font=40, command=lambda: decode(entry.get()))
+decodeButton = tkinter.Button(frame, text='Decode', bg='cyan', fg='red', font=64, command=lambda: decode(entry.get()))
 decodeButton.place(relx=0.5, rely=0.4, relwidth=0.5, relheight=0.2)
 
 root.mainloop()
-
