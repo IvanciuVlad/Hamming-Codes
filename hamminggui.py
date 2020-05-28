@@ -1,9 +1,12 @@
 import tkinter
+from random import randrange
 
 # Dimensions of the window generated
 HEIGHT = 600
 WIDTH = 700
 
+# Global variable used for hamming code asa string used in multiple functions
+hammingCodeStr = ''
 
 def bitCheck(bits):
     valid = ['1', '0']
@@ -13,11 +16,30 @@ def bitCheck(bits):
     return 1
 
 
+def lenghtCheckDecode(bits):
+    l = len(bits)
+    # 16 is a completely arbitrary limit
+    for i in range(2, 16):
+        if l == (2 ** i) - 1:
+            return 1
+    return 0
+
+
+def lengthCheckEncode(bits):
+    l = len(bits)
+    # once again, arbitrary number
+    for i in range(2, 16):
+        if l == 2 ** i - i - 1:
+            return 1
+    return 0
+
+
 def encode(data):
     labelString = ''
     dataBits = list(data)
     dataBits.reverse()
-    if bitCheck(dataBits):
+    if bitCheck(dataBits) and lengthCheckEncode(dataBits):
+        labelString = labelString + "Input was: " + data + "\n"
         labelString = labelString + "It's syntactically correct \n"
         l = len(dataBits)
         hammingCode = []
@@ -64,18 +86,21 @@ def encode(data):
                 c += 1
 
         hammingCode.reverse()
-        labelString = labelString + ''.join(map(str, hammingCode)) + '\n'
-
+        labelString = labelString + "Encoded: " + ''.join(map(str, hammingCode)) + '\n'
+        global hammingCodeStr
+        hammingCodeStr = ''.join(map(str, hammingCode))
     else:
         labelString = "Insert a valid string"
     label['text'] = labelString
+    entry.delete(0, 'end')
+    entry.insert(0, ''.join(map(str, hammingCode)))
 
 
 def decode(data):
     labelString = ''
     hammingCode = list(data)
     hammingCode.reverse()
-    if bitCheck(hammingCode):
+    if bitCheck(hammingCode) and lenghtCheckDecode(hammingCode):
         labelString = labelString + "It's syntactically correct\n"
         r, c, j, error = 0, 0, 0, 0
         syndromes, hammingCode_copy, dataBits = [], [], []
@@ -137,6 +162,27 @@ def decode(data):
         labelString = 'Insert a valid string'
     label['text'] = labelString
 
+
+def generateDataBits(length):
+    genBits = ''
+    # Generates a random bit code of the length specified by the user and inserts it in the entry
+    for i in range(int(length)):
+        genBits += str(randrange(2))
+    entry.delete(0, 'end')
+    entry.insert(0, genBits)
+
+
+def invertBit(position):
+    # Since in python strings are not immutable, we converted it into a list and we invert the bit at the position specified by the user, the new string is inserted in the Entry
+    hc = list(hammingCodeStr)
+    if hc[int(position) - 1] == "1":
+        hc[int(position) - 1] = "0"
+    else:
+        hc[int(position) - 1] = "1"
+    entry.delete(0, 'end')
+    entry.insert(0, ''.join(map(str, hc)))
+
+
 root = tkinter.Tk()
 
 root.title("Hamming codes")
@@ -147,16 +193,22 @@ canvas.pack()
 frame = tkinter.Frame(root, bg='#b3b3ff', bd=5)
 frame.place(relx=0.05, rely=0.05, relwidth=0.9, relheight=0.9)
 
-entry = tkinter.Entry(frame, font=64)
+entry = tkinter.Entry(frame, font=72)
 entry.place(relx=0.0, rely=0.0, relwidth=1.0, relheight=0.4)
 
-label = tkinter.Label(frame, text='Please insert your code', font=64)
-label.place(relx=0.0, rely=0.6, relwidth=1.0, relheight=0.4)
+label = tkinter.Label(frame, text='Please insert your code', font=72)
+label.place(relx=0.0, rely=0.7, relwidth=1.0, relheight=0.4)
 
-encodeButton = tkinter.Button(frame, text='Encode', bg='cyan', fg='red', font=64, command=lambda: encode(entry.get()))
-encodeButton.place(relx=0.0, rely=0.4, relwidth=0.5, relheight=0.2)
+encodeButton = tkinter.Button(frame, text='Encode', bg='cyan', fg='red', font=72, command=lambda: encode(entry.get()))
+encodeButton.place(relx=0.0, rely=0.3, relwidth=0.5, relheight=0.2)
 
-decodeButton = tkinter.Button(frame, text='Decode', bg='cyan', fg='red', font=64, command=lambda: decode(entry.get()))
-decodeButton.place(relx=0.5, rely=0.4, relwidth=0.5, relheight=0.2)
+decodeButton = tkinter.Button(frame, text='Decode', bg='cyan', fg='red', font=72, command=lambda: decode(entry.get()))
+decodeButton.place(relx=0.5, rely=0.3, relwidth=0.5, relheight=0.2)
+
+generateBits = tkinter.Button(frame, text='Generate', bg='cyan', fg='red', font=72, command=lambda: generateDataBits(entry.get()))
+generateBits.place(relx=0.0, rely=0.5, relwidth=0.5, relheight=0.2)
+
+changeBit = tkinter.Button(frame, text='Change bit', bg='cyan', fg='red', font=72, command=lambda: invertBit(entry.get()))
+changeBit.place(relx=0.5, rely=0.5, relwidth=0.5, relheight=0.2)
 
 root.mainloop()
